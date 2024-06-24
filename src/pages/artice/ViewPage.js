@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Viewer } from '@toast-ui/react-editor';
-
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 import MainLayout from '../../layout/MainLayout';
 import {
@@ -19,8 +18,21 @@ import '@toast-ui/editor/dist/i18n/ko-kr';
 import { RootUrl } from '../../api/RootUrl';
 import { getCookie } from '../../util/cookieUtil';
 import moment from 'moment';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+
+const roleView = {
+    ADMIN: 3,
+    MANAGER: 2,
+    USER: 1,
+};
+const getRoleValue = (role) => roleView[role] || 0;
 
 const ViewPage = () => {
+    const loginSlice = useSelector((state) => state.loginSlice) || {};
+    const role = loginSlice.userRole;
+    const userRoleValue = getRoleValue(role);
+
     const navigate = useNavigate();
 
     const modifyHandler = () => {
@@ -50,6 +62,7 @@ const ViewPage = () => {
     const queryParams = new URLSearchParams(location.search);
     const articleCateNo = queryParams.get('articleCateNo');
     const articleNo = queryParams.get('articleNo');
+    const commentRole = queryParams.get('role');
 
     let pg = queryParams.get('pg');
     if (pg === null) {
@@ -185,6 +198,61 @@ const ViewPage = () => {
         fetchData();
     }, []);
 
+    // 댓글 수정 토글 핸들러
+    const toggleEditComment = (index) => {
+        setComment((prevComments) =>
+            prevComments.map((each, idx) =>
+                idx === index ? { ...each, isEditing: !each.isEditing, editedCommentCnt: each.commentCnt } : each
+            )
+        );
+    };
+
+    // 댓글 내용 변경 핸들러
+    const handleCommentChange = (e, index) => {
+        const { value } = e.target;
+        setComment((prevComments) =>
+            prevComments.map((each, idx) => (idx === index ? { ...each, editedCommentCnt: value } : each))
+        );
+    };
+
+    // 댓글 수정 저장 핸들러
+    const saveEditedComment = async (commentNo, index) => {
+        try {
+            const updatedComment = comment[index];
+            await axios.put(`${RootUrl()}/article/comment/${commentNo}`, {
+                commentNo: updatedComment.commentNo,
+                commentCnt: updatedComment.editedCommentCnt,
+            });
+            setComment((prevComments) =>
+                prevComments.map((each, idx) =>
+                    idx === index ? { ...each, isEditing: false, commentCnt: updatedComment.editedCommentCnt } : each
+                )
+            );
+            alert('댓글이 수정되었습니다.');
+        } catch (err) {
+            console.error('Failed to update comment:', err);
+            alert('댓글 수정에 실패했습니다.');
+        }
+    };
+
+    // 댓글 삭제 핸들러
+    const deleteCommentHandler = async (commentNo) => {
+        const confirmed = window.confirm('댓글을 삭제하시겠습니까?');
+        if (confirmed) {
+            try {
+                await axios.delete(`${RootUrl()}/article/comment/${commentNo}`);
+                alert('댓글이 삭제되었습니다.');
+                fetchData(); // 댓글 목록을 다시 불러옵니다.
+            } catch (err) {
+                console.error('댓글 삭제 실패:', err);
+                alert('댓글 삭제에 실패했습니다.');
+            }
+        }
+    };
+
+    // 현재 로그인한 사용자가 글 작성자인지 확인
+    const isAuthor = id === articleView.stfNo;
+
     return (
         <MainLayout>
             <div className="contentBox boxStyle7">
@@ -198,7 +266,13 @@ const ViewPage = () => {
                         <p>첨부파일목록</p>
                         {fileList.map((file, index) => (
                             <div key={index}>
-                                <Link to="#" onClick={() => handFileDownload(file.fileNo, file.fileOname)}>
+                                <Link
+                                    to="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handFileDownload(file.fileNo, file.fileOname);
+                                    }}
+                                >
                                     {file.fileOname}
                                 </Link>
                             </div>
@@ -208,31 +282,37 @@ const ViewPage = () => {
 
                 <div className="writeRow">
                     <div className="wrtieBtnBox">
-                        <input type="submit" value={'수정'} onClick={modifyHandler} />
-                        <input type="submit" value={'삭제'} onClick={deleteHandler} />
+                        {isAuthor && (
+                            <>
+                                <input type="submit" value={'수정'} onClick={modifyHandler} />
+                                <input type="submit" value={'삭제'} onClick={deleteHandler} />
+                            </>
+                        )}
                         <input type="button" value={'목록'} onClick={listHandler} />
                     </div>
                 </div>
 
                 {/* 댓글 */}
-                <div className="commentColumn">
-                    <p>답변 </p>
+                <div className="commentColumn" style={{borderTop:"1px solid #dadde6"}}>
+                    <p style={{fontSize:"20px", margin:"20px 0"}}>답변 </p>
                     {/* 댓글 작성 */}
-                    <div className="commentRow commentColumn">
-                        <div>
-                            <img src="../images/iconSample3.png" alt="" />
-                            <textarea
-                                name="commentCnt"
-                                id="commentCnt"
-                                placeholder="답글입력"
-                                value={commentMessage.commentCnt || ''}
-                                onChange={commentChange}
-                            ></textarea>
+                    {getRoleValue(commentRole) <= userRoleValue && (
+                        <div className="commentRow commentColumn">
+                            <div>
+                                <img src="../images/iconSample3.png" alt="" />
+                                <textarea
+                                    name="commentCnt"
+                                    id="commentCnt"
+                                    placeholder="답글입력"
+                                    value={commentMessage.commentCnt || ''}
+                                    onChange={commentChange}
+                                ></textarea>
+                            </div>
+                            <div style={{ alignSelf: 'self-end' }}>
+                                <button onClick={submitHandler}>답글등록</button>
+                            </div>
                         </div>
-                        <div style={{ alignSelf: 'self-end' }}>
-                            <button onClick={submitHandler}>답글등록</button>
-                        </div>
-                    </div>
+                    )}
 
                     {/* 댓글 목록 */}
                     {comment ? (
@@ -250,14 +330,34 @@ const ViewPage = () => {
                                                 {moment(each.commentRdate).format('YYYY-MM-DD HH:MM:DD')}
                                             </p>
                                         </div>
-                                        <textarea readOnly name="" id="" value={each.commentCnt}></textarea>
+                                        <textarea
+                                            readOnly={!each.isEditing}
+                                            name=""
+                                            id=""
+                                            value={each.isEditing ? each.editedCommentCnt : each.commentCnt}
+                                            onChange={(e) => handleCommentChange(e, index)}
+                                        ></textarea>
                                     </div>
                                 </div>
 
                                 <div style={{ alignSelf: 'self-end' }}>
-                                    <button data-id={each.commentNo} onClick={deleteHandler}>
-                                        삭제
-                                    </button>
+                                    {id === each.stfNo && (
+                                        <>
+                                            {each.isEditing ? (
+                                                <button onClick={() => saveEditedComment(each.commentNo, index)}>
+                                                    저장
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => toggleEditComment(index)}>수정</button>
+                                            )}
+                                            <button
+                                                data-id={each.commentNo}
+                                                onClick={() => deleteCommentHandler(each.commentNo)}
+                                            >
+                                                삭제
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))

@@ -151,7 +151,6 @@ body {
 .modalRow > div:nth-child(2) {
     width: 300px;
 }
-
 .modalRow > div > select {
     width: 200px;
     height: 40px;
@@ -356,8 +355,8 @@ section {
     width: 297px;
     height: 100%;
     padding: 10px;
-    background: #3f4d67; /* 다크 블랙-그레이 그라데이션 */
-    border-right: 2px solid #414345; /* 그레이 테두리 */
+    background: #6e9bf0; /* 다크 블랙-그레이 그라데이션 */
+    border-right: 2px solid rgb(80, 102, 144); /* 그레이 테두리 */
     box-shadow: 10px 0px 20px #c8c8c8;
     z-index: 10;
     overflow: scroll;
@@ -410,7 +409,7 @@ section {
     height: 50px;
 }
 .boxTitle p {
-    font-size: 20px;
+    font-size: 30px;
     font-weight: bold;
     color: #111;
     padding-left: 10px;
@@ -480,18 +479,19 @@ section {
     padding-left: 6px;
 }
 .sideTab:hover {
-    background-color: #cecece;
+    background-color: #4678d7;
 }
 .sideTabOn {
-    background-color: #9e9e9e;
+    background-color: #4678d7;
 }
 
 /* 상단바 */
 #navbar {
+    width: 100hv;
     display: flex;
     height: 50px;
     padding: 10px 0;
-    justify-content: space-between;
+    justify-content: end;
     align-content: center;
     background-color: white;
     border-bottom: 1px solid #535c91;
@@ -527,9 +527,9 @@ section {
 }
 #userBox > a {
     display: flex;
-    width: 80px;
     height: 30px;
     align-items: center;
+    margin-right: 20px;
 }
 #userBox > img {
     width: 30px;
@@ -541,7 +541,6 @@ section {
     display: flex;
     flex-wrap: wrap;
     width: 1600px;
-    height: 100%;
     margin: 0 auto;
     justify-content: center;
 }
@@ -587,13 +586,13 @@ section {
 }
 .boxStyle5 {
     width: 1180px;
-    height: 780px;
+    height: auto;
     margin: 10px;
     padding: 20px;
     box-sizing: border-box;
 }
 .boxStyle6 {
-    width: 25%;
+    width: 380px;
     height: auto;
     margin: 10px;
     padding: 20px;
@@ -602,7 +601,7 @@ section {
 /*가로:무한 세로:무한 스크롤*/
 .boxStyle7 {
     width: 1600px;
-    height: 97%;
+    min-height: 840px;
     margin: 10px;
     padding: 20px;
     box-sizing: border-box;
@@ -611,8 +610,8 @@ section {
 }
 /*가로:무한 세로:900px - 스크롤 넣어야함*/
 .boxStyle8 {
-    width: 1600px;
-    height: 900px;
+    width: 1580px;
+    height: auto;
     margin: 10px;
     padding: 20px;
     box-sizing: border-box;
@@ -629,6 +628,30 @@ section {
 .boxStyle10 {
     width: 780px;
     height: auto;
+    margin: 10px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+/*가로:50% 세로 20%*/
+.boxStyle11 {
+    width: 780px;
+    height: 300px;
+    margin: 10px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+/*가로:33% 세로 25%*/
+.boxStyle12 {
+    width: 513px;
+    height: 380px;
+    margin: 10px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.mainSEtting {
+    display: flex;
+    width: 1160px;
+    height: 780px;
     margin: 10px;
     padding: 20px;
     box-sizing: border-box;
@@ -712,6 +735,12 @@ section {
     display: flex;
     width: 100%;
     padding: 10px 0;
+    justify-content: center;
+    flex-direction: column;
+}
+.profileRow > p {
+    font-size: 18px;
+    padding: 0 0 20px 20px;
 }
 
 .contentImg {
@@ -720,11 +749,15 @@ section {
     height: 100px;
 }
 .profileContent {
-    padding: 10px 0 10px 10px;
+    padding: 10px 0 10px 30px;
 }
 .profileContent > p {
     font-size: 18px;
-    padding: 5px 0;
+    padding: 10px 0;
+}
+.profileContent > p:nth-child(1) {
+    font-size: 20px;
+    font-weight: bolder;
 }
 .hidden {
     display: block !important;
@@ -1773,7 +1806,7 @@ section {
     justify-content: center;
 }
 .ModArticleRow > div:nth-child(6) {
-    width: 10%;
+    width: 20%;
     justify-content: center;
 }
 .ModArticleRow > div:nth-child(7) {
@@ -1816,7 +1849,7 @@ section {
     justify-content: center;
 }
 .ModArticleRowTitle > div:nth-child(6) {
-    width: 10%;
+    width: 20%;
     justify-content: center;
 }
 .ModArticleRowTitle > div:nth-child(7) {
@@ -1831,6 +1864,8 @@ section {
     flex-direction: column;
     width: 100%;
     height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 .scrollRow {
     display: flex;
@@ -2034,6 +2069,11 @@ section {
     display: flex;
     justify-content: space-between;
 }
+.commentRow > div > div > img {
+    width: 100px;
+    height: 100px;
+    margin: 20px;
+}
 .commentRow > div > img {
     width: 100px;
     height: 100px;
@@ -2116,7 +2156,8 @@ section {
 .chatBox {
     display: flex;
     width: 100%;
-    height: 100%;
+    height: 840px;
+    margin-bottom: 30px;
 }
 .chatInfo {
     width: 100%;
@@ -2134,8 +2175,15 @@ section {
     width: 80%;
     padding: 0 10px;
     align-content: center;
-    font-size: 20px;
+    font-size: 30px;
     font-weight: bolder;
+}
+.chatInfo > div > input {
+    width: 100%;
+    align-content: center;
+    font-size: 30px;
+    font-weight: bolder;
+    border: 0;
 }
 .chatInfo p:nth-child(1) {
     font-weight: bolder;
@@ -2149,11 +2197,26 @@ section {
     overflow: hidden;
 }
 .chatInfo span {
+    position: relative;
     display: flex;
     font-size: 16px;
     margin: 0 10px;
     align-self: center;
     cursor: pointer;
+}
+.settingBox {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #111;
+    padding: 5px 0;
+    width: 100px;
+    top: 30px;
+    right: -5px;
+    z-index: 30;
+}
+.settingBox > h3 {
+    font-size: 16px;
+    text-align: center;
 }
 .chatRoomList {
     display: flex;
@@ -2193,10 +2256,12 @@ section {
 .chatRoom {
     display: flex;
     flex-direction: column;
-    justify-content: end;
+    /*justify-content: end;*/
     width: 100%;
     height: 100%;
     padding: 10px 0;
+    overflow: scroll;
+    scrollbar-width: none;
 }
 .chat {
     display: flex;
@@ -2262,16 +2327,35 @@ section {
     height: 40px;
 }
 .inviteList {
+    width: auto !important;
     flex-wrap: wrap;
 }
 .inviteList > span {
     border: 1px solid #dddddd;
     border-radius: 4px;
     margin: 4px;
-    padding: 4px;
+    padding: 15px;
     cursor: pointer;
-    height: 32px;
+    height: 15px;
+    font-size: 18px;
+    color: #111;
 }
+
+.modalRow {
+    display: flex;
+    align-items: center;
+}
+
+.maR30 {
+    margin-right: 30px;
+}
+
+.inviteList span:hover,
+.inviteList span.selected {
+    background-color: lightgrey; /* 원하는 호버 색상으로 변경 */
+    color: white;
+}
+
 .emojiBox {
     position: absolute;
     display: flex;
@@ -2444,7 +2528,6 @@ section {
 
 /* 마이페이지 */
 .myPage {
-    width: 800px;
     display: flex;
     flex-direction: column;
     margin: 0 auto;
@@ -2475,28 +2558,37 @@ section {
 }
 .myPage img {
     width: 200px;
+    margin: 20px;
 }
 
 .myPage input {
     border: 0;
     width: 280px;
-    height: 30px;
     font-size: 16px;
+    padding: 10px;
+    margin: 4px;
 }
+
 .myContent {
-    height: 50px;
     justify-content: space-between;
     align-items: center;
-    margin: 10px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #dddddd;
 }
+.myContent > div {
+    height: 100%;
+    padding: 10px 0;
+    align-items: center;
+}
 .myContent > div > p {
-    width: 100px;
-    height: 30px;
+    width: 80px;
     font-size: 16px;
     font-weight: bolder;
     align-items: center;
     padding-left: 10px;
+}
+.myContent label {
+    align-items: center;
 }
 .myPage button {
     font-size: 16px;
@@ -2518,6 +2610,20 @@ section {
     text-align: center;
     align-content: center;
     cursor: pointer;
+}
+.sBtn {
+    display: flex;
+    width: 60px !important;
+    height: 36px !important;
+    border: 1px solid #808080;
+    border-radius: 4px;
+    font-size: 16px !important;
+    text-align: center !important;
+    align-content: center !important;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-sizing: border-box;
 }
 .myPageRow {
     display: flex;
@@ -2753,6 +2859,9 @@ section {
 .docList:hover {
     background-color: #dddddd;
 }
+.docListOn {
+    background-color: #e6e6e6;
+}
 .docList > div {
     width: 100%;
     padding: 0 10px;
@@ -2785,4 +2894,99 @@ section {
 .accordion-content.show {
     max-height: 200px; /* 필요한 만큼의 최대 높이 설정 */
     overflow-y: auto;
+}
+.docEditor {
+    overflow: scroll;
+    scrollbar-width: none;
+}
+
+.disabled {
+    display: flex;
+    padding: 0 10px 10px 40px;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.disabled > p {
+    font-size: 16px;
+    padding: 4px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+.disabled > p > img {
+    margin-right: 7px;
+    height: 30px;
+    width: 30px;
+}
+
+/* cs 이용약관 */
+.csTerms {
+    margin: 10px;
+    padding: 10px;
+    height: 50%;
+}
+.csTerms > p {
+    font-size: 30px;
+    font-weight: bolder;
+    margin: 10px 0;
+}
+.csTerms > textarea {
+    height: 100%;
+    font-size: 14px;
+    resize: none;
+    padding: 10px;
+}
+
+/* 관리자 메인 */
+.adminMain {
+    display: flex;
+    margin: 0 30px;
+}
+.adminMain > img,
+.adminMain > a > img {
+    width: 200px;
+}
+.adminMain > p {
+    margin: 10px 0;
+    font-size: 30px;
+    font-weight: bolder;
+}
+.adminMain > span {
+    font-size: 20px;
+    margin: 4px 0;
+}
+.adminImg {
+    align-items: center;
+}
+.adminImg > a > p {
+    font-size: 30px;
+    font-weight: bolder;
+    margin-bottom: 20px;
+}
+.adminImg > a > img {
+    width: 250px;
+}
+
+/* todo */
+.todoBtn {
+    display: flex;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: 0;
+    background-color: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    align-items: center;
+}
+.ssBtn {
+    display: flex;
+    padding: 0 4px;
+    font-size: 14px;
+    border: 1px solid #959595;
+    background-color: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    align-items: center;
 }

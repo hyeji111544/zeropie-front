@@ -1,222 +1,330 @@
-import { faFaceSmile, faGear, faImage, faPaperPlane, faSquarePlus } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFaceSmile, faGear, faImage, faPaperPlane, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import EmojiBoxComponent from './EmojiBoxComponent';
-import { getCookie} from "../../../util/cookieUtil";
-import { RootUrl } from '../../../api/RootUrl';
-import { findUser,saveUser,chatSave } from '../../../api/ChatApi'
+import { getCookie } from "../../../util/cookieUtil";
+import { RootUrl, SoketUrl } from '../../../api/RootUrl'; // SoketUrl 오타 수정
+import { findUser, saveUser, chatSave, getMessage, postLeaveRoom , getDeleteRoom,findUserList} from '../../../api/ChatApi';
+import AddChatMemberModal from '../../modal/AddChatMemberModal';
 
-
-
-const ChatRoomComponent = ({socket, roomId, roomname, id,beforeMessage}) => {
-
+const ChatRoomComponent = ({ roomId, roomname, id, createUser }) => {
     const [chat, setChat] = useState([]);
-    const [ws, setWs] = useState(null);
-    const [type, setType] = useState('');
-   
+    const [beforeChat, setBeforeChat] = useState([]); // 이전 채팅 불러오기
+    const [socket, setSocket] = useState(null); // WebSocket 객체 상태 추가
     const auth = getCookie("auth");
-
-    const now = new Date();
-    const localDateTime = now.toLocaleString();
-
-    /** 커서 깜박이기 */
+    const chatEndRef = useRef(null); // 메세지 추적
     const textareaRef = useRef(null);
-
-    /** 커서 깜박이기 useEffect 
-    useEffect(() => {
-        if (textareaRef.current) {
-            textareaRef.current.focus();
-        }
-    }, []); */
-
-    /** 이모티콘 박스 오픈 */
-    const [emojiBoxOpne, setEmojiBoxOpen] = useState(false);
-
-    const emojiBoxChange = () => {
-        setEmojiBoxOpen(prev => !prev);
-    }
-
-    /** 이모티콘 선택 */
-    const choseEmoji = (event) => {
-        const emoji = event.target.innerText;
-        emojiBoxChange();
-        setChatMsg(prevChatMsg => prevChatMsg + emoji);
-    }
-
-    /** 입력한 채팅 내용 */
+    const [emojiBoxOpen, setEmojiBoxOpen] = useState(false);
     const [chatMsg, setChatMsg] = useState("");
-
-    const updateMsg = (event) => {
-        if (chatMsg !== ""){
-            setChatMsg(prevChatMsg => event.target.value);
-        } else {
-            setChatMsg(event.target.value);
-        }
-    }
+    const [settingsOpen, setSettingsOpen] = useState(false); // 설정 메뉴 상태 추가
+    const [modalOpen, setModalOpen] = useState(false); // 모달 열림/닫힘 상태 추가
 
 
-    const selectUserList = async (roomId,id)=>{
+    useEffect(() => {
+        if (!roomId || !id) return;
 
-        console.log("방번호",roomId);
-        console.log("사용자 아이디",id);
+        setChat([]);
 
-        const data={
-            "roomId":roomId,
-            "stfNo":id
-        }
+        // 저장했던 내용 가져오기
+        const getBeforeChat = async () => {
+            const response = await getMessage(roomId);
+            setBeforeChat(response);
+        };
 
-        try {
-            const userType = await findUser(data);
-            console.log('제발1 : ' + userType);
+        const connectWebSocket = () => {
+            const newSocket = new WebSocket(`ws://${SoketUrl}/ws?userId=${auth?.userId}`);
 
-            setType(userType);
+            newSocket.onopen = () => {
+                console.log("WebSocket 연결 성공");
+                setSocket(newSocket); // WebSocket 객체 설정
+                fetch(newSocket); // 연결 후 추가 작업 수행
+            };
 
-            //console.log('제발1 : ' + type);
-            //console.log('제발2 : ' + num);
-   
-            if (userType === "TALK") {
-               // console.log("지금 type의 상태", type);
-               setType("TALK");
+            newSocket.onclose = () => {
+                console.log("WebSocket 연결 종료");
+                setSocket(null); // 연결 종료 시 상태 업데이트
+            };
+
+            newSocket.onerror = (error) => {
+                console.log("WebSocket 오류: ", error);
+            };
+
+            newSocket.onmessage = (event) => {
+                const receivedMessage = JSON.parse(event.data);
+                console.log("받은 메시지", receivedMessage);
                 
-            } else { // type === "ENTER"
-                //console.log("지금 type의 상태2", type);
-                //setType("ENTER");
-                sendMessage("ENTER");  
-                await saveUser({id:id,roomId:roomId});//들어온 유저 저장하기                    
+                setChat(prevChat => [...prevChat, receivedMessage]);
+            };
+        };
+
+        getBeforeChat();
+        connectWebSocket();
+
+        return () => {
+            if (socket) {
+                socket.close();
             }
+        };
+    }, [roomId, id, auth?.userId]);
 
-        } catch (error) {
-            console.error("findUser 호출 중 오류 발생:", error);            
+    useEffect(() => {
+        if (chatEndRef.current) {
+            chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }
+    }, [chat]);
 
-    const sendMessage = async (msgType) => {
-        //console.log("msgType - ",msgType);
-        console.log("roomId - ",roomId);
-        console.log("sender - ",auth?.username);
-        console.log("message - ",chatMsg);
-        console.log("type - ",msgType);
-        
+    const fetch = async (socket) => {
+        const data = {
+            roomId: roomId,
+            stfNo: id
+        };
+
+        const result = await findUser(data);
+
+        if (result === "ENTER") {
+            const enterMessage = `${auth?.username}님이 입장하셨습니다.`;
+            sendMessage(socket, "ENTER",enterMessage);
+            await saveUser(data);
+        } else if (result === "NOMAL") {
+            sendMessage(socket, "NOMAL");
+        }
+    }; 
+
+    const sendMessage = async (socket, msgType, message = chatMsg) => {
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            console.error('WebSocket 연결 없음');
+            return;
+        }
+
         const chatMessage = {
-            roomId: roomId, 
+            roomId: roomId,
             sender: auth?.username,
-            message: chatMsg,
+            message: message,
             type: msgType,
         };
 
         const saveMessage = {
             roomId: roomId,
-            stfNo:auth?.userId,
-            message:chatMsg  
+            stfNo: auth?.userId,
+            stfName:auth?.username,
+            message: message,
+            img: auth?.userImg
+        };
+
+        try {
+            await chatSave(saveMessage);
+            socket.send(JSON.stringify(chatMessage));
+            setChatMsg('');
+        } catch (error) {
+            console.error("메시지 전송 오류:", error);
         }
-
-        await chatSave(saveMessage);
-
-        ws.send(JSON.stringify(chatMessage));
-        setChatMsg('');      
     };
-    
-    useEffect(() => {
-        if (socket) {
-            setWs(socket);
-            socket.onmessage = (event) => {
-                const receivedMessage = JSON.parse(event.data);
-                setChat((prevChat) => [...prevChat, receivedMessage]);
-            };
-        }
-    }, [socket]);
 
-    useEffect(()=>{
-        console.log("roomId",roomId);
-        console.log("roomName",roomname);
+    const emojiBoxChange = () => {
+        setEmojiBoxOpen(prev => !prev);
+    };
 
-        if (roomId && id) {
-            selectUserList(roomId, id);            
-        }
+    const choseEmoji = (event) => {
+        const emoji = event.target.innerText;
+        emojiBoxChange();
+        setChatMsg(prevChatMsg => prevChatMsg + emoji);
+    };
 
-    },[roomId, id]);
+    const updateMsg = (event) => {
+        setChatMsg(event.target.value);
+    };
 
-   
-  return (
-    <div className="contentBox boxStyle8">
-        <div className="chatInfo" style={{justifyContent:"space-between", padding:"20px 0"}}>
-            <div>{roomname} 대화방</div>
-            <label htmlFor="" style={{display:"flex"}}>
-                <span>
-                    <FontAwesomeIcon icon={faSquarePlus} /> &nbsp;멤버 추가
-                </span>
-                <span>
-                    <FontAwesomeIcon icon={faGear} /> &nbsp;설정
-                </span>
-            </label>
-        </div>
+    const toggleSettings = () => {
+        setSettingsOpen(prev => !prev);
+    };
 
-        {/*key 속성이 있으므로 React가 리스트 요소의 변경 사항을 효율적으로 감지하고 업데이트할 수 있습니다.
-            불필요한 리렌더링을 방지하여 성능이 최적화됩니다. */}
-            {/*로그인한 객체가 본인이면 로그인한 이미지를 띄우고 본인이 아니면...? */}
+    const leaveRoom = async () => {
+        console.log("방 나가기");
 
-        <div className='chatRoom'>
-        {beforeMessage.length > 0 ? (
-                beforeMessage.map((msg, index) => (
-                    <div className='chat' key={index}>
-                        {auth?.userImg ? (
-                            <img src={`${RootUrl()}/images/${auth?.userImg}`} alt='image from spring'/>
-                        ) : (
-                            <img src="../images/iconSample3.png" alt='' />
-                        )}
-                        <div>
-                            <p>
-                                {msg.sender} <span>{msg.rdate}</span>
-                            </p>
-                            <p>{msg.message}</p>
-                        </div>
-                    </div>
-                ))
-            ) : (<p>No messages available</p>)              
-            
-        }
+        const data = {
+            roomId: roomId,
+            stfNo: id
+        };
 
-            {chat.map((msg,index)=>(
-            <div className='chat' key={index}>
-                {auth?.userImg?(<img src={`${RootUrl()}/images/${auth?.userImg}`} alt='image from spring'/> ):(<img src="../images/iconSample3.png" alt="" />)}
-                           
-                <div>
-                    <p>{msg.sender} <span>{msg.rdate}</span></p>
-                    <p>{msg.message}</p>
-                </div>
-            </div>
-            ))}
-         </div>
+        const enterMessage1 = `${auth?.username}님이 퇴장하셨습니다.`;
+
+        sendMessage(socket, "QUIT",enterMessage1);
+
+        await postLeaveRoom(data);
+        
+        window.location.reload();
+
+        alert("방에서 퇴장하셨습니다.");
+        
+    };
+
+    const deleteRoom = async () => {
+        // 방 삭제 로직 구현
+        console.log("방 삭제");
+
         
 
-        <div className='inputChatBox'>
-            <div className='inputChat'>
-                <span>
-                    <FontAwesomeIcon icon={faImage}
-                        className="chatIcon" 
-                        style={{color:"rgb(19, 168, 174)"}}/>
-                        
+        const data={
+            roomId:roomId,
+            stfNo:id
+        }
+
+        const result = await getDeleteRoom(data);
+
+        if(result>=1){
+
+            window.location.reload();
+            alert("삭제 되었습니다.");            
+
+
+        }else{
+            alert("삭제에 실패하였습니다.");
+        }
+        
+    };
+
+    const handleAddMembers = (newMembers) => {
+
+        console.log('새 멤버:', newMembers);//내가 추가 했던 멤버들이 여기로 들어오네
+
+        {newMembers.map((name)=>{
+
+            const Listname =`${name.stfName}`;
+            const ListId = `${name.stfNo}`;
+            const enterMessage = `${Listname}님이 입장하셨습니다.`;
+            const enterImg = `${name.stfImg}`;
+            
+            console.log("어떤 메시지를 보낼것인가",enterMessage);
+            console.log("어떤 이미지를 보낼것인가",enterImg);
+
+            const send = async(socket)=>{
+
+                const chatMessage = {
+                    roomId: roomId,
+                    sender: Listname,
+                    message: enterMessage,
+                    type: "ENTER",
+                    img:enterImg
+                };
+        
+                const saveMessage = {
+                    roomId: roomId,
+                    stfNo: ListId,
+                    stfName:Listname,
+                    message: enterMessage,
+                    img: enterImg
+                };
+
+
+                try {
+                    await chatSave(saveMessage);
+                    socket.send(JSON.stringify(chatMessage));
+                    setChatMsg('');
+                } catch (error) {
+                    console.error("메시지 전송 오류:", error);
+                }
+
+            }     
+            
+            send(socket);
+
+        })}   
+        
+    };
+
+    return (
+        <>
+            <div className="chatInfo" style={{ justifyContent: "space-between", padding: "20px 0", position: "relative" }}>
+                <div>{roomname} 대화방</div>
+                <label htmlFor="" style={{ display: "flex", cursor: "pointer" }}>
+                    <span onClick={()=>setModalOpen(true)}>
+                        <FontAwesomeIcon icon={faSquarePlus} /> &nbsp;멤버 추가
+                    </span>
+                    <span onClick={toggleSettings}>
+                        <FontAwesomeIcon icon={faGear} /> &nbsp;설정
+                    </span>
+                    {settingsOpen && (
+                        <div className="settingsMenu" style={{ position: "absolute", top: "60px", right: 0, background: "#fff", border: "2px solid #ccc", zIndex: 1 }}>
+                            {createUser===auth?.userId?(<div onClick={deleteRoom} style={{ padding: "10px 20px", cursor: "pointer" }}>방 삭제</div>):(<div onClick={leaveRoom} style={{ padding: "10px 20px", cursor: "pointer" }}>방 나가기</div>)}
+                        </div>
+                    )}
+                </label>
+            </div>
+
+            <div className='chatRoom'>
+
+                {beforeChat.map((msg, index) => (
+                    msg.roomId === roomId && (
+                        <div className='chat' key={index}>
+                            {msg.img ? (
+                                <img src={`${RootUrl()}/images/${msg.img}`} alt='이미지' />
+                            ) : (
+                                <img src="../images/iconSample3.png" alt="" />
+                            )}
+                            <div>
+                                <p>{msg.stfName} <span>{msg.dateTime}</span></p>
+                                <p>{msg.message}</p>
+                            </div>
+                        </div>
+                    )
+                ))}
+
+                {chat.map((msg, index) => (
+                    msg.roomId === roomId && msg.message!==''&& (
+                        <div className='chat' key={index}>
+                            {msg.img ? (
+                                <img src={`${RootUrl()}/images/${msg.img}`} alt='이미지' />
+                            ) : (
+                                <img src="../images/iconSample3.png" alt="" />
+                            )}
+                            <div>
+                                <p>{msg.sender} <span>{msg.rdate}</span></p>
+                                <p>{msg.message}</p>
+                            </div>
+                        </div>
+                    )
+                ))}
+                <div ref={chatEndRef} />
+            </div>
+
+            <div className='inputChatBox'>
+                <div className='inputChat'>
+                    <span>
                         <FontAwesomeIcon icon={faFaceSmile}
                             className="chatIcon"
-                            style={{color:"#ff9100"}}
+                            style={{ color: "#ff9100" }}
                             onClick={emojiBoxChange} />
-                        {emojiBoxOpne && <EmojiBoxComponent choseEmoji={choseEmoji}/>}
-                </span>
+                        {emojiBoxOpen && <EmojiBoxComponent choseEmoji={choseEmoji} />}
+                    </span>
 
-                {/*여기가 채팅을 치는 곳 */}
-                <textarea name="" id="" value={chatMsg}
-                    ref={textareaRef}
-                    onChange={updateMsg}
-                    ></textarea>
+                    <textarea name="" id="" value={chatMsg}
+                        ref={textareaRef}
+                        onChange={updateMsg}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                sendMessage(socket, 'TALK', chatMsg);
+                            }
+                        }}
+                        ></textarea>
 
-                <span style={{alignSelf:"center"}}>
-                    <FontAwesomeIcon icon={faPaperPlane} 
-                        style={{color:"rgb(19, 168, 174)", padding:"20px", cursor:"pointer"}} onClick={()=>sendMessage('TALK')}/>
-                </span>
+                    <span style={{ alignSelf: "center" }}>
+                        <FontAwesomeIcon icon={faPaperPlane}
+                            style={{ color: "rgb(19, 168, 174)", padding: "20px", cursor: "pointer" }}
+                            onClick={() => sendMessage(socket, 'TALK',chatMsg)} />
+                    </span>
+                </div>
             </div>
-        </div>
-    </div>
-  )
-}
+            {modalOpen && (
+                <AddChatMemberModal
+                    roomId={roomId}
+                    handelColseModal={() => setModalOpen(false)}
+                    onAddMembers={handleAddMembers}
+                />
+            )}
+            </>
+           
+    );
+};
 
-export default ChatRoomComponent
+export default ChatRoomComponent;

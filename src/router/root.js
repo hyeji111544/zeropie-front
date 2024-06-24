@@ -26,12 +26,14 @@ import ProjectPage from '../pages/private/ProjectPage';
 import CalendarPage from '../pages/private/CalendarPage';
 import MyPage from '../pages/private/MyPage';
 import PlanOrderPage from '../pages/member/PlanOrderPage';
-import ToDoPage from '../pages/private/ToDoPage';
 import DocPage from '../pages/private/DocPage';
 import PrivateRoute from './PrivateRoute';
+import CsTermsPage from '../pages/cs/CsTermsPage';
+import AdminMain from '../pages/admin/AdminMain';
+import SocialKakao from '../components/auth/SocialKakao';
+import KakaoRedirect from '../components/auth/KakaoRedirect';
 
 const root = createBrowserRouter([
-
     // member
     { path: '/login', element: <LoginPage /> },
     { path: '/signup', element: <SignupPage /> },
@@ -44,146 +46,195 @@ const root = createBrowserRouter([
     { path: '/groupPlan', element: <GroupPlanPage /> },
     { path: '/planOrder', element: <PlanOrderPage /> },
 
+    //auth Test
+    { path: '/auth', element: <KakaoRedirect /> },
+    { path: '/test', element: <SocialKakao /> },
+
     // main
-    { path: '/', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <MainPage />
-        </PrivateRoute>
+    {
+        path: '/',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <MainPage />
+            </PrivateRoute>
         ),
     },
 
     // private
-    { path: '/group', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <GroupPage />
-        </PrivateRoute>
+    {
+        path: '/group',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <GroupPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/chat', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <ChatPage />
-        </PrivateRoute>
+
+    {
+        path: '/chat',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <ChatPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/project', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <ProjectPage />
-        </PrivateRoute>
+
+    {
+        path: '/project',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <ProjectPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/calendar', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <CalendarPage />
-        </PrivateRoute>
+
+    {
+        path: '/calendar',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <CalendarPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/mypage', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <MyPage />
-        </PrivateRoute>
+
+    {
+        path: '/mypage',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <MyPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/toDo', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <ToDoPage />
-        </PrivateRoute>
+
+    {
+        path: '/doc',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <DocPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/doc', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <DocPage />
-        </PrivateRoute>
-        ),
-    },
-        
+
     // article
-    { path: '/list', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <ListPage />
-        </PrivateRoute>
+    {
+        path: '/list',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <ListPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/write', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <WritePage />
-        </PrivateRoute>
+
+    {
+        path: '/write',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <WritePage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/view', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <ViewPage />
-        </PrivateRoute>
+
+    {
+        path: '/view',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <ViewPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/modify', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <ModifyPage />
-        </PrivateRoute>
+
+    {
+        path: '/modify',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <ModifyPage />
+            </PrivateRoute>
         ),
     },
-        
+
     // admin
-    { path: '/config', element: (
-        <PrivateRoute allowedRoles={['ADMIN']}>
-            <ConfigPage />
-        </PrivateRoute>
+    {
+        path: '/config',
+        element: (
+            <PrivateRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                <ConfigPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/userList', element: (
-        <PrivateRoute allowedRoles={['ADMIN']}>
-            <UserListPage />
-        </PrivateRoute>
+
+    {
+        path: '/userList',
+        element: (
+            <PrivateRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                <UserListPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/articleList', element: (
-        <PrivateRoute allowedRoles={['ADMIN']}>
-            <ArticleListPage />
-        </PrivateRoute>
+
+    {
+        path: '/articleList',
+        element: (
+            <PrivateRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                <ArticleListPage />
+            </PrivateRoute>
         ),
     },
-        
-        
-    { path: '/articleModify', element: (
-        <PrivateRoute allowedRoles={['ADMIN']}>
-            <ArticleModifyPage />
-        </PrivateRoute>
+
+    {
+        path: '/admin',
+        element: (
+            <PrivateRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                <AdminMain />
+            </PrivateRoute>
+        ),
+    },
+
+    {
+        path: '/articleModify',
+        element: (
+            <PrivateRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                <ArticleModifyPage />
+            </PrivateRoute>
         ),
     },
 
     // cs
-    { path: '/csList', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <CsListPage />
-        </PrivateRoute>
+    {
+        path: '/csList',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <CsListPage />
+            </PrivateRoute>
         ),
     },
-        
-    { path: '/csWrite', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <CsWritePage />
-        </PrivateRoute>
-        ),
-    },
-        
-    { path: '/csView', element: (
-        <PrivateRoute allowedRoles={['USER', 'ADMIN']}>
-            <CsViewPage />
-        </PrivateRoute>
-        ),
-    },
-        
-    //{ path: '/csModify', element: <CsModifyPage /> },
 
+    {
+        path: '/csWrite',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <CsWritePage />
+            </PrivateRoute>
+        ),
+    },
+
+    {
+        path: '/csView',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <CsViewPage />
+            </PrivateRoute>
+        ),
+    },
+
+    {
+        path: '/csTerms',
+        element: (
+            <PrivateRoute allowedRoles={['USER', 'ADMIN', 'MANAGER']}>
+                <CsTermsPage />
+            </PrivateRoute>
+        ),
+    },
+
+    //{ path: '/csModify', element: <CsModifyPage /> },
 ]);
 export default root;

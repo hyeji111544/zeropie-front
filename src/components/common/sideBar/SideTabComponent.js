@@ -19,7 +19,7 @@ const SideTabComponent = ({ sideTabCate, sideTabCateName, type }) => {
         <Link to={`/${sideTabCate}`} className="sideTab">
             <div>
                 {/* 관리자 */}
-                {sideTabCate === 'index' && (
+                {sideTabCate === 'admin' && (
                     <>
                         <FontAwesomeIcon icon={faGear} />
                         <p>관리자메인</p>
@@ -61,6 +61,12 @@ const SideTabComponent = ({ sideTabCate, sideTabCateName, type }) => {
                     <>
                         <FontAwesomeIcon icon={faFileLines} />
                         <p>프로젝트</p>
+                    </>
+                )}
+                {sideTabCate === 'doc' && (
+                    <>
+                        <FontAwesomeIcon icon={faFileLines} />
+                        <p>문서</p>
                     </>
                 )}
                 {sideTabCate === 'calendar' && (

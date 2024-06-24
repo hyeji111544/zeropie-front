@@ -26,14 +26,25 @@ const ConfigPage = () => {
         setRankValue(newValue);
     };
 
+    const addNewRank = (newRank) => {
+        setDptValue((prevState) => [...prevState, newRank]);
+    };
+
     const fetchData = async () => {
         try {
-            const rnkResponse = await getRnkList();
             const detResponse = await getDptAndStfList();
-            console.log(rnkResponse);
             console.log(detResponse);
-            setRankValue(rnkResponse);
             setDptValue(detResponse);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const rnkFetchData = async () => {
+        try {
+            const rnkResponse = await getRnkList();
+            console.log(rnkResponse);
+            setRankValue(rnkResponse);
         } catch (err) {
             console.log(err);
         }
@@ -41,6 +52,7 @@ const ConfigPage = () => {
 
     useEffect(() => {
         fetchData();
+        rnkFetchData();
     }, []);
 
     return (
@@ -53,7 +65,13 @@ const ConfigPage = () => {
                     fetchData={fetchData}
                 />
 
-                <RankConfigComponent handleChangeRank={handleChangeRank} rankValue={rankValue} />
+                <RankConfigComponent
+                    handleChangeRank={handleChangeRank}
+                    rankValue={rankValue}
+                    setRankValue={setRankValue}
+                    addNewRank={addNewRank}
+                    rnkFetchData={rnkFetchData}
+                />
             </div>
         </MainLayout>
     );

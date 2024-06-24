@@ -4,11 +4,11 @@ import axios from 'axios';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
-
+import { useCookies } from 'react-cookie';
 import { RootUrl } from '../../api/RootUrl.js';
+import { getPlanStatusNo } from '../../api/MemberApi.js';
 const rootURL = RootUrl();
 
-//import { getEmail,getFindPostion,getFindRnk, getVeriftyCode } from '../../api/MemberApi';
 
 
 
@@ -16,7 +16,7 @@ const RegisterPage = () => {
 
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const type = queryParams.get('type');
+    const type = queryParams.get('type');//일반 유저인지, 관리자인지
 
     const [preview, setPreview] = useState(null);
     const [file, setFile] = useState(null); // 파일을 상태로 관리onst [file, setFile] = useState(null);
@@ -54,6 +54,7 @@ const RegisterPage = () => {
         dptNo: "",
         rnkNo: "",
         thumbFile: null,
+        planStatusNo:"",//최고 관리자가 선택한 요금제를 따라가기
     });
 
     const [loading, setLoading] = useState(true);
@@ -90,12 +91,17 @@ const RegisterPage = () => {
 
 
 
-
+    const [cookies, setCookie, removeCookie] = useCookies(['Terms']);
 
     // 컴포넌트가 렌더링될 때(마운트)
     useEffect(() => {
         console.log("컴포넌트가 렌더링될 때(마운트)");
 
+        if (!cookies.Terms) {
+            alert("유효하지 않은 접근입니다.");
+            navigate('/login');
+            return
+        }
         /*
         const data = ['사원','대리','과장','차장','부장']
         setPositions(data);    
@@ -117,8 +123,24 @@ const RegisterPage = () => {
                 console.log(err);
             });
 
-        
+            findPlanStatusNo();
+
+        return () => {
+            removeCookie('Terms', { path: '/' });
+        }
+
     }, []);
+
+
+        //최고 관리자의 요금제 구하기
+        const findPlanStatusNo = async () =>{        
+        
+            const result = await getPlanStatusNo();
+            
+            setStf(prevStf => ({ ...prevStf, planStatusNo: result }));
+            
+            console.log("요금제 : ",result);
+        }
 
 
 
@@ -144,7 +166,7 @@ const RegisterPage = () => {
 
 
 
-
+    //이메일 보내기
     const handleSendEmail = (e) => {
 
         e.preventDefault();
@@ -180,6 +202,12 @@ const RegisterPage = () => {
                 console.log(err);
             });
     };
+
+
+
+
+
+    //확인 코드 보내기
     const handleVerifyCode = (e) => {
 
         console.log("savedCode : "+savedCode);
@@ -192,7 +220,7 @@ const RegisterPage = () => {
             code: verificationCode,
             scode: savedCode
           },
-          withCredentials: true // 세션 쿠키 포함(사용안함:세션사용안함)
+          //withCredentials: true // 세션 쿠키 포함(사용안함:세션사용안함)
         })
           .then((response) => {
             const result = response.data.result;
@@ -213,9 +241,10 @@ const RegisterPage = () => {
 
 
 
-    //회원가입버튼을 누르면 post전송
+    //회원가입버튼 클릭(post전송)
     const submitHandler = (e) => {
         e.preventDefault();
+
         alert("회원가입이 완료되었습니다");
 
         const formData = new FormData();
@@ -242,7 +271,12 @@ const RegisterPage = () => {
             })
             .then((response) => {
                 console.log("결과물 이건 data : "+response.data.stfNo);
-                navigate("/complete", { state: { user: response.data.stfNo } });
+
+                if(type=="ADMIN"){
+                    navigate(`/groupPlan?stfNo=${response.data.stfNo}`);
+                }else{
+                    navigate("/complete", {state: { user: response.data.stfNo }});
+                }
             })
             .catch((err) => {
                 console.log(err);
@@ -290,11 +324,11 @@ const RegisterPage = () => {
     };
 
 
-    //핸드폰 유효성
+    //핸드폰 유효성(정규표현식 수정완료)
     const onChangePhone = (e) => {
         const currentPhone = e.target.value;
         setStf({ ...stf, stfPh: currentPhone });
-        const phoneRegExp = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/;
+        const phoneRegExp = /^01([0|1|6|7|8|9])-([0-9]{3,4})-([0-9]{4})$/;
 
         if (!phoneRegExp.test(currentPhone)) {
             setPhoneMessage(false);
@@ -546,7 +580,7 @@ const RegisterPage = () => {
                     </div>
                     
                     <div className='memberRow'>
-                        <Link className='registerBtn' to="/">취소</Link>
+                        <Link className='registerBtn' to="/login">취소</Link>
                         <input className='registerBtn' type="submit" value="회원가입" disabled={!isFormValid} />
                     </div>
                 </form>

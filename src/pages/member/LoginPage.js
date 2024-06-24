@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import MemberLayout from '../../layout/MemberLayout';
 import { Link, useNavigate } from 'react-router-dom';
-import { RootUrl } from '../../api/RootUrl.js';
+import { FEc2, RootUrl } from '../../api/RootUrl.js';
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { login } from "../../slice/LoginSlice"; 
@@ -9,14 +9,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 
 
-const rootURL = RootUrl();
 
+const rootURL = RootUrl();
 const initState = {
     uid: "",
     pass: "",
   };
 
 const LoginPage = () => {
+
+  const Rest_api_key='3227ae68356a2d41ac3d1a0a451d3676' //REST API KEY
+  const redirect_uri = `${FEc2}/auth` //Redirect URI
+  const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${Rest_api_key}&redirect_uri=${redirect_uri}&response_type=code`
 
 
     const navigate = useNavigate();
@@ -26,12 +30,15 @@ const LoginPage = () => {
     const [lockState, setLockState] = useState(false);
     //const [isCheck,setIsCheck] = useState(true)
     //const [isCheck1,setIsCheck1] = useState(true);
-  
 
+    const handleLogin = ()=>{
+      window.location.href = kakaoURL
+  }
+  
     const changeHandler = (e) => {
         console.log("여기 일단 들어와?");
       //loginParam[e.target.name] = e.target.value;
-      setLoginParam({ ...loginParam, [e.target.name]: e.target.value });
+      setLoginParam({ ...loginParam, [e.target.name]: e.target.value.trim() });//공백제거
     };
 
 
@@ -82,13 +89,20 @@ const LoginPage = () => {
                 <img className="loginImg" src="../images/zeroPie2.png" alt=""/>
             </div>
 
-            <form onSubmit={submitHandler}>
+            <div className="loginEtc" style={{flexDirection:"column", textAlign:"center"}}>
+              <p>테스트 계정</p>
+              <p>관리자 : SDD2107 / abcd1234!</p>
+              <p>일반회원 : SDD2108 / abcd1234!</p>
+            </div>
+
+            <form onSubmit={submitHandler} style={{alignItems: "center"}}>
                 <label htmlFor="">
                 <input type="text" name = "uid" placeholder='아이디입력' value={loginParam.uid} onChange={changeHandler}/>
                 </label>
 
                 <label htmlFor="">
-                <input type={showPswd ? "text" : "password"} name="pass" placeholder='비밀번호입력' value={loginParam.pass} onChange={changeHandler}/>
+                <input type={showPswd ? "text" : "password"} name="pass" placeholder='비밀번호입력' value={loginParam.pass} onChange={changeHandler}
+                  style={{position: "relative", right: "-15px"}}/>
                 
                 {lockState ? (
                   <button type ="button" onClick={changePassStatus}><FontAwesomeIcon icon={faLockOpen} /></button>                
@@ -99,17 +113,15 @@ const LoginPage = () => {
                 
                 </label>
 
-                <label htmlFor="myInput" className="labelSvae">
-                    <input type="checkbox"/> 아이디 저장
-                </label>
+
 
                 <input type="submit" value="로그인" className='btnLogin'/>
             </form>
 
             <div>
-                <Link to="#" className="socialLogin">
-                    <img src="/images/googleIcon.png" alt=""/>
-                    <span style={{color:"white"}}>구글 계정으로 로그인</span>
+                <Link to="#" className="socialLogin" style={{justifyContent:"center"}}>
+                    <img src="/images/kakao.png" alt=""/>
+                    <span style={{color:"white"}} onClick={handleLogin}>카카오 계정으로 로그인</span>
                 </Link>
             </div>
 

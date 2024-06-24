@@ -8,6 +8,8 @@ import { getCsView } from '../../api/CsApi';
 import { getCookie } from "../../util/cookieUtil";
 import { postCsComment,getcsComment,getDeleteCsView } from '../../api/CsApi';
 import axios from 'axios';
+import { RootUrl } from '../../api/RootUrl';
+
 
 
 
@@ -88,13 +90,30 @@ const CsViewPage = () => {
             csComContent: commentMessage.csComContnet
         };
 
+
         try {
             console.log("new : ",newComment);
             const response = await postCsComment(newComment);
             console.log('Comment submitted successfully:', response);
 
-            const url = "/csView?csNo=" + csNo;
-            window.location.href=url;
+            {/*여기서 부터 수정 
+            const updatedComment = {
+                ...newComment,
+                stfName: auth?.username, 
+                stfImg: auth?.userImg 
+            };
+
+            setComment(prevComments => [...prevComments, updatedComment]);
+
+            setCommentMessage('');
+             여기까지 */}
+
+                         
+                const url = "/csView?csNo=" + csNo;
+                window.location.href=url;
+                
+                
+                
         } catch (error) {
             console.error('Failed to submit comment:', error);
         }
@@ -151,24 +170,26 @@ const CsViewPage = () => {
 
             <div className='writeRow'>
                 <div className='wrtieBtnBox'>
-                    <input type='submit' onClick={deleteCsView} value={"삭제"}/>
+         
+                    {auth?.userId===csView.stfNo || auth?.userRole==="MANAGER" ||auth?.userRole==="ADMIN"?(<input type='submit' onClick={deleteCsView} value={"삭제"}/>):('')}
+                    
                     <input type='button' onClick={back} value={"목록"}/>
                 </div>
             </div>
 
             {/* 댓글 */}
-            <div className='commentColumn'>
-                <p>답변 {comment.length}</p>
+            <div className='commentColumn' style={{borderTop:"1px solid #dadde6"}}>
+                <p style={{fontSize:"20px", margin:"20px 0"}}>답변 {comment.length}</p>
                 {/* 댓글 작성 */}
-                <div className='commentRow commentColumn'>
+                {auth?.userRole=="MANAGER" || auth?.userRole=="ADMIN"?(<div className='commentRow commentColumn'>
                     <div>
-                        <img src="../images/iconSample3.png" alt="" />
+                        {auth?.userImg?(<img src={`${RootUrl()}/images/${auth?.userImg}`}/>):(<img src="../images/iconSample3.png" alt="" />)}
                         <textarea name="csComContnet" id="csComContnet" placeholder='답글입력' value={comment.commentCnt} onChange={commentChange}></textarea>
                     </div>
                     <div style={{alignSelf:"self-end"}}>
                         <button onClick={submitHandler}>답글등록</button>
                     </div>
-                </div>
+                </div>):("")} 
 
                 {/* 댓글 목록 */}
                 <CommentListComponent comment={comment} csNo={csView.csNo}/>

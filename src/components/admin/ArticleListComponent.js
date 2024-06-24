@@ -15,15 +15,9 @@ const ArticleListComponent = (articleList) => {
     };
 
     // 모달창 닫는 핸들러
-    const handleModalClose = (index, modifiedData) => {
+    const handleModalClose = (index) => {
+        window.location.reload();
         setModalOpen((prev) => ({ ...prev, [index]: false }));
-
-        console.log('modifiedData : ', modifiedData);
-        setArticleCateList((prevList) => {
-            const newList = [...prevList];
-            newList[index] = modifiedData;
-            return newList;
-        });
     };
 
     const handleNavigation = (articleCateNo) => {
@@ -41,6 +35,7 @@ const ArticleListComponent = (articleList) => {
                 await delArticleCateList(articleCateList[index].articleCateNo);
                 const newList = articleCateList.filter((item, i) => i !== index);
                 setArticleCateList(newList);
+                window.location.reload();
             } catch (err) {
                 console.log('게시판 삭제 실패', err);
             }

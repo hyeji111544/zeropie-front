@@ -65,3 +65,42 @@ export const postPay= async (data)=>{
     const response = await axios.post(`${rootURL}/postPay`,data);
     return response.data;
 }
+
+
+
+//가입후에 플랜 다시 저장
+export const savePlan= async (data)=>{
+    console.log("플랜 결제후에 플랜 타입을 저장",data);
+    const response = await axios.get(`${rootURL}/savePlan?user=${data.user}&planNo=${data.planNo}`);
+    return response.data;
+}
+
+
+//무료고객은 플랜 따로 저장
+export const freePlan= async (data)=>{
+
+    console.log("무료고객 플랜 저장 - 아이디 : ",data);
+    const response = await axios.get(`${rootURL}/freePlan?stfNo=${data}`);
+    return response.data;
+}
+
+
+//최고관리자가 결제한 요금제 들고 오기
+export const getPlanStatusNo= async ()=>{
+
+    console.log("최고 관리자의 요금제 들고오기 : ");
+    const response = await axios.get(`${rootURL}/getPlanStatusNo`);
+    return response.data;
+}
+
+
+// 전화번호 중복 검사
+export const stfHpCheckApi = async (stfPh) => {
+    const response = await axios.post(`${RootUrl()}/checkPh`, {stfPh}, {
+        headers : {
+            'Content-Type': 'application/json'
+        }
+    });
+    return response.data;
+};
+
